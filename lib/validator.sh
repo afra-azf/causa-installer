@@ -371,7 +371,7 @@ post_component_validation() {
         fi
     }
 
-    local k8s_mcp_status jafra_mcp_status quarkus_status postgres_status causa_status causa_mcp_status
+    local k8s_mcp_status jafra_mcp_status quarkus_status prom_mcp_status postgres_status causa_status causa_mcp_status
 
     _check_deployment "Kubernetes MCP Server"  "kubernetes-mcp-server"  k8s_mcp_status
     _check_deployment "Jafra MCP Server"       "jafra-mcp"              jafra_mcp_status
@@ -381,6 +381,8 @@ post_component_validation() {
     else
         _check_deployment "PostgreSQL"         "postgres"               postgres_status
     fi
+    _check_deployment "Prometheus MCP Server"  "prometheus-mcp-server"  prom_mcp_status
+    _check_deployment "PostgreSQL"             "postgres"               postgres_status
     _check_deployment "Causa Backend"          "causa-backend"          causa_status
     _check_deployment "Causa MCP Server"       "causa-mcp"              causa_mcp_status
 
@@ -391,6 +393,7 @@ post_component_validation() {
         echo -e "${k8s_mcp_status}"
         echo -e "${jafra_mcp_status}"
         echo -e "${quarkus_status}"
+        echo -e "${prom_mcp_status}"
         echo -e "${postgres_status}"
         echo -e "${causa_status}"
         echo -e "${causa_mcp_status}"
