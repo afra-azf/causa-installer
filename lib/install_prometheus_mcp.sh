@@ -143,6 +143,13 @@ uninstall_prometheus_mcp_server() {
         return 0
     fi
 
+    # Prometheus MCP Server is not installed on OpenShift — skip cleanly to avoid
+    # accidentally deleting a same-named resource we do not own.
+    if [[ "${INSTALL_TARGET:-kind}" != "kind" ]]; then
+        write_to_log_file "INFO" "Prometheus MCP Server: skipping uninstall — OpenShift target not yet supported"
+        return 0
+    fi
+
     if ! ${KUBE_CLI} get deployment prometheus-mcp-server -n "${INSTALL_NAMESPACE}" &>/dev/null && \
        ! ${KUBE_CLI} get service prometheus-mcp-server -n "${INSTALL_NAMESPACE}" &>/dev/null; then
         write_to_log_file "INFO" "Prometheus MCP Server not found — nothing to remove"
