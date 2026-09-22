@@ -382,7 +382,6 @@ post_component_validation() {
         _check_deployment "PostgreSQL"         "postgres"               postgres_status
     fi
     _check_deployment "Prometheus MCP Server"  "prometheus-mcp-server"  prom_mcp_status
-    _check_deployment "PostgreSQL"             "postgres"               postgres_status
     _check_deployment "Causa Backend"          "causa-backend"          causa_status
     _check_deployment "Causa MCP Server"       "causa-mcp"              causa_mcp_status
 

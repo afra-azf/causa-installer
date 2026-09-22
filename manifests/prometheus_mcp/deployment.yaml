@@ -44,14 +44,16 @@ spec:
               memory: "256Mi"
               cpu: "250m"
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /mcp
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /mcp
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10

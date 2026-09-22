@@ -76,6 +76,14 @@ install_prometheus_mcp_server() {
         return 0
     fi
 
+    # OpenShift is not yet supported — skip cleanly instead of falling through
+    # to discover_prometheus_url (which looks for prometheus-operated in the
+    # monitoring namespace, a service that doesn't exist on OpenShift).
+    if [[ "${INSTALL_TARGET:-kind}" != "kind" ]]; then
+        write_to_log_file "INFO" "Prometheus MCP Server: skipping — OpenShift target not yet supported"
+        return 0
+    fi
+
     # Prometheus MCP queries Prometheus for metrics. Verify Prometheus is running.
     if ! validate_prometheus_available; then
         log_error "Prometheus MCP Server requires Prometheus — see above for install instructions"
