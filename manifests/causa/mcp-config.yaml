@@ -81,18 +81,36 @@ data:
           "tools": [
             {
               "name": "query",
-              "contextKey": "PROMETHEUS_INSTANT_METRICS",
-              "description": "Instant CPU and memory snapshot for the alerting pod.",
+              "contextKey": "PROMETHEUS_CPU_INSTANT",
+              "description": "Instant CPU usage for the alerting pod (cores, 5-minute rate).",
               "arguments": {
-                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\"}[5m])) or sum(container_memory_working_set_bytes{namespace=\"${namespace}\",pod=\"${podName}\"})"
+                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\",container!=\"\",container!=\"POD\"}[5m]))"
+              }
+            },
+            {
+              "name": "query",
+              "contextKey": "PROMETHEUS_MEMORY_INSTANT",
+              "description": "Instant memory working set for the alerting pod (bytes).",
+              "arguments": {
+                "query": "sum(container_memory_working_set_bytes{namespace=\"${namespace}\",pod=\"${podName}\",container!=\"\",container!=\"POD\"})"
               }
             },
             {
               "name": "range_query",
-              "contextKey": "PROMETHEUS_RANGE_METRICS",
+              "contextKey": "PROMETHEUS_CPU_RANGE",
               "description": "CPU usage trend over the last 5 minutes for the alerting pod, 60-second resolution.",
               "arguments": {
-                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\"}[5m]))",
+                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\",container!=\"\",container!=\"POD\"}[5m]))",
+                "start_time": "5m",
+                "step": "60s"
+              }
+            },
+            {
+              "name": "range_query",
+              "contextKey": "PROMETHEUS_MEMORY_RANGE",
+              "description": "Memory working set trend over the last 5 minutes for the alerting pod, 60-second resolution. Rising trend indicates a memory leak.",
+              "arguments": {
+                "query": "sum(container_memory_working_set_bytes{namespace=\"${namespace}\",pod=\"${podName}\",container!=\"\",container!=\"POD\"})",
                 "start_time": "5m",
                 "step": "60s"
               }
