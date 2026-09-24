@@ -81,15 +81,21 @@ data:
           "tools": [
             {
               "name": "query",
-              "contextKey": "PROMETHEUS_METRICS",
-              "description": "Instant PromQL query — current value of a metric expression at evaluation time.",
-              "arguments": { "query": "${promQuery}" }
+              "contextKey": "PROMETHEUS_INSTANT_METRICS",
+              "description": "Instant CPU and memory snapshot for the alerting pod.",
+              "arguments": {
+                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\"}[5m])) or sum(container_memory_working_set_bytes{namespace=\"${namespace}\",pod=\"${podName}\"})"
+              }
             },
             {
               "name": "range_query",
               "contextKey": "PROMETHEUS_RANGE_METRICS",
-              "description": "Range PromQL query — metric values over a time window (default last 5 minutes, 60s step).",
-              "arguments": { "query": "${promQuery}", "start_time": "5m", "step": "60s" }
+              "description": "CPU usage trend over the last 5 minutes for the alerting pod, 60-second resolution.",
+              "arguments": {
+                "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"${namespace}\",pod=\"${podName}\"}[5m]))",
+                "start_time": "5m",
+                "step": "60s"
+              }
             }
           ]
         }
