@@ -160,6 +160,25 @@ install_causa() {
         write_to_log_file "INFO" "Route created for Causa Backend"
     else
         # ── kind path ─────────────────────────────────────────────────────────
+
+        # Apply the MCP config ConfigMap first — the deployment mounts it at
+        # /etc/causa/mcp.json so it must exist before the pod starts.
+        local mcp_config_manifest="${SCRIPT_DIR}/manifests/causa/mcp-config.yaml"
+        local tmp_mcp
+        if ! tmp_mcp=$(mktemp /tmp/causa-$$-mcp-config-XXXXXX.yaml); then
+            log_error "Failed to create temporary file for Causa MCP ConfigMap"
+            return 1
+        fi
+        sed -e "s/PLACEHOLDER_NAMESPACE/${INSTALL_NAMESPACE}/g" \
+            "${mcp_config_manifest}" > "${tmp_mcp}"
+        if ! ${KUBE_CLI} apply -f "${tmp_mcp}" >>"${LOG_FILE}" 2>&1; then
+            rm -f "${tmp_mcp}"
+            log_error "Failed to apply Causa MCP ConfigMap"
+            return 1
+        fi
+        rm -f "${tmp_mcp}"
+        write_to_log_file "SUCCESS" "Manifest applied: ${mcp_config_manifest}"
+
         # Build a temp manifest with all placeholders substituted (namespace,
         # cluster type, and the Quarkus metrics base URL).
         local manifest="${SCRIPT_DIR}/manifests/causa/deployment.yaml"
@@ -220,7 +239,8 @@ uninstall_causa() {
         delete_manifest "${ocp_dir}/configmap.yaml"      "${INSTALL_NAMESPACE}"
         delete_manifest "${ocp_dir}/serviceaccount.yaml" "${INSTALL_NAMESPACE}"
     else
-        delete_manifest "${SCRIPT_DIR}/manifests/causa/deployment.yaml" "${INSTALL_NAMESPACE}"
+        delete_manifest "${SCRIPT_DIR}/manifests/causa/mcp-config.yaml"  "${INSTALL_NAMESPACE}"
+        delete_manifest "${SCRIPT_DIR}/manifests/causa/deployment.yaml"   "${INSTALL_NAMESPACE}"
     fi
 
     write_to_log_file "SUCCESS" "Causa Backend uninstalled"

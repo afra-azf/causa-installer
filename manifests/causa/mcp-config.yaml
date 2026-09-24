@@ -1,0 +1,97 @@
+---
+# Causa MCP Config — ConfigMap
+# Namespace placeholder: PLACEHOLDER_NAMESPACE (replaced by installer at apply time)
+# Mounted at /etc/causa/mcp.json inside the causa-backend pod.
+# McpSettingsLoader reads this at startup and registers all MCP servers.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: causa-mcp-config
+  namespace: PLACEHOLDER_NAMESPACE
+  labels:
+    app: causa-backend
+    app.kubernetes.io/component: rca-engine
+data:
+  mcp.json: |
+    {
+      "mcpServers": {
+        "kubernetes": {
+          "type": "streamable-http",
+          "url": "http://kubernetes-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "headers": {},
+          "optional": false,
+          "alwaysAllow": ["pods_get", "pods_log", "events_list"],
+          "healthCheck": { "url": "http://kubernetes-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/healthz", "timeoutMs": 5000 },
+          "timeoutMs": 5000,
+          "description": "Kubernetes MCP — live pod status, events, and container logs from the cluster API",
+          "tools": [
+            {
+              "name": "pods_get",
+              "contextKey": "POD_STATUS",
+              "description": "Current pod phase, container statuses, restart counts, and resource requests/limits.",
+              "arguments": { "name": "${podName}", "namespace": "${namespace}" }
+            },
+            {
+              "name": "events_list",
+              "contextKey": "POD_EVENTS",
+              "description": "Kubernetes events for the pod (Type, Reason, Message, Timestamp).",
+              "arguments": { "namespace": "${namespace}", "fieldSelector": "involvedObject.name=${podName}" }
+            },
+            {
+              "name": "pods_log",
+              "contextKey": "POD_LOGS",
+              "description": "Current container logs, last 25 lines.",
+              "arguments": { "name": "${podName}", "namespace": "${namespace}", "container": "${containerName}", "previous": "false", "tailLines": "25" }
+            },
+            {
+              "name": "pods_log",
+              "contextKey": "POD_LOGS_PREVIOUS",
+              "description": "Previous (crashed/restarted) container logs, last 25 lines.",
+              "arguments": { "name": "${podName}", "namespace": "${namespace}", "container": "${containerName}", "previous": "true", "tailLines": "25" }
+            }
+          ]
+        },
+        "quarkus": {
+          "type": "streamable-http",
+          "url": "http://mcp-metrics.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "headers": {},
+          "optional": true,
+          "alwaysAllow": ["fetch_raw_metrics_from_endpoint"],
+          "healthCheck": { "url": "http://mcp-metrics.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/healthz", "timeoutMs": 10000 },
+          "timeoutMs": 10000,
+          "description": "Quarkus MCP — raw Prometheus-format metrics scraped from the target application metrics endpoint",
+          "tools": [
+            {
+              "name": "fetch_raw_metrics_from_endpoint",
+              "contextKey": "QUARKUS_RAW_METRICS",
+              "description": "Raw Prometheus-format metrics text scraped from the application /q/metrics endpoint.",
+              "arguments": { "pod_name": "${podName}", "namespace": "${namespace}", "baseUrl": "${metadata.metricsBaseUrl}" }
+            }
+          ]
+        },
+        "prometheus": {
+          "type": "streamable-http",
+          "url": "http://prometheus-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "headers": {},
+          "optional": true,
+          "alwaysAllow": ["query", "range_query", "healthy", "ready"],
+          "healthCheck": { "url": "http://prometheus-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/metrics", "timeoutMs": 15000 },
+          "timeoutMs": 15000,
+          "description": "Prometheus MCP — PromQL instant and range queries against the in-cluster Prometheus instance",
+          "tools": [
+            {
+              "name": "query",
+              "contextKey": "PROMETHEUS_METRICS",
+              "description": "Instant PromQL query — current value of a metric expression at evaluation time.",
+              "arguments": { "query": "${promQuery}" }
+            },
+            {
+              "name": "range_query",
+              "contextKey": "PROMETHEUS_RANGE_METRICS",
+              "description": "Range PromQL query — metric values over a time window (default last 5 minutes, 60s step).",
+              "arguments": { "query": "${promQuery}", "start_time": "5m", "step": "60s" }
+            }
+          ]
+        }
+      }
+    }
