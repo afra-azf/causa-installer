@@ -31,7 +31,6 @@ spec:
         - name: causa-backend
           # Image resolved from CAUSA_BACKEND_IMAGE / lib/images.env
           image: quay.io/causaai/causa-backend:latest
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               name: http
