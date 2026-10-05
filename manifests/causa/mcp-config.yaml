@@ -17,11 +17,11 @@ data:
       "mcpServers": {
         "kubernetes": {
           "type": "streamable-http",
-          "url": "http://kubernetes-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "url": "http://kubernetes-mcp-server:8080/mcp",
           "headers": {},
           "optional": false,
           "alwaysAllow": ["pods_get", "pods_log", "events_list"],
-          "healthCheck": { "url": "http://kubernetes-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/healthz", "timeoutMs": 5000 },
+          "healthCheck": { "url": "http://kubernetes-mcp-server:8080/healthz", "timeoutMs": 5000 },
           "timeoutMs": 5000,
           "description": "Kubernetes MCP — live pod status, events, and container logs from the cluster API",
           "tools": [
@@ -53,11 +53,11 @@ data:
         },
         "quarkus": {
           "type": "streamable-http",
-          "url": "http://mcp-metrics.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "url": "http://mcp-metrics:8080/mcp",
           "headers": {},
           "optional": true,
           "alwaysAllow": ["fetch_raw_metrics_from_endpoint"],
-          "healthCheck": { "url": "http://mcp-metrics.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/healthz", "timeoutMs": 10000 },
+          "healthCheck": { "url": "http://mcp-metrics:8080/healthz", "timeoutMs": 10000 },
           "timeoutMs": 10000,
           "description": "Quarkus MCP — raw Prometheus-format metrics scraped from the target application metrics endpoint",
           "tools": [
@@ -71,11 +71,11 @@ data:
         },
         "prometheus": {
           "type": "streamable-http",
-          "url": "http://prometheus-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/mcp",
+          "url": "http://prometheus-mcp-server:8080/mcp",
           "headers": {},
           "optional": true,
           "alwaysAllow": ["query", "range_query", "healthy", "ready"],
-          "healthCheck": { "url": "http://prometheus-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080/metrics", "timeoutMs": 15000 },
+          "healthCheck": { "url": "http://prometheus-mcp-server:8080/metrics", "timeoutMs": 15000 },
           "timeoutMs": 15000,
           "description": "Prometheus MCP — PromQL instant and range queries against the in-cluster Prometheus instance",
           "tools": [

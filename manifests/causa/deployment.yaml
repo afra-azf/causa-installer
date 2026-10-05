@@ -31,6 +31,7 @@ spec:
         - name: causa-backend
           # Image resolved from CAUSA_BACKEND_IMAGE / lib/images.env
           image: quay.io/causaai/causa-backend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               name: http
@@ -40,13 +41,13 @@ spec:
             # MCP server endpoints — update once each server is deployed
             # ----------------------------------------------------------------
             - name: CAUSA_MCP_K8S_ENDPOINT
-              value: "http://kubernetes-mcp-server.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080"
+              value: "http://kubernetes-mcp-server:8080"
             - name: CAUSA_MCP_QUARKUS_ENDPOINT
-              value: "http://mcp-metrics.PLACEHOLDER_NAMESPACE.svc.cluster.local:8080"
+              value: "http://mcp-metrics:8080"
             - name: CAUSA_MCP_QUARKUS_METRICS_BASE_URL
               value: "PLACEHOLDER_QUARKUS_METRICS_BASE_URL"
             - name: CAUSA_MCP_ASYNC_PROFILER_ENDPOINT
-              value: "http://jafra-mcp.PLACEHOLDER_NAMESPACE.svc.cluster.local:8083"
+              value: "http://jafra-mcp:8083"
             # ----------------------------------------------------------------
             # LLM configuration (optional — app starts without it)
             # Set via kubectl create secret or helm values in production
