@@ -110,10 +110,16 @@ install_causa() {
 
     # Apply the MCP config ConfigMap — mounts mcp.json at /etc/causa inside the pod.
     # Applies to both kind and OpenShift; must exist before the deployment starts.
-    # Built from manifests/causa/mcp.json via --from-file; labels are injected via
+    # Built from target-specific mcp.json via --from-file; labels are injected via
     # sed into the dry-run YAML output before apply so they are preserved on the
     # ConfigMap without needing a separate mcp-config.yaml manifest.
-    local mcp_json="${SCRIPT_DIR}/manifests/causa/mcp.json"
+    local mcp_json
+    if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
+        mcp_json="${SCRIPT_DIR}/manifests/openshift/causa/mcp.json"
+    else
+        mcp_json="${SCRIPT_DIR}/manifests/causa/mcp.json"
+    fi
+
     if ! ${KUBE_CLI} create configmap causa-mcp-config \
             --from-file=mcp.json="${mcp_json}" \
             --namespace="${INSTALL_NAMESPACE}" \
