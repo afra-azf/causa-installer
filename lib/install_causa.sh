@@ -120,15 +120,32 @@ install_causa() {
         mcp_json="${SCRIPT_DIR}/manifests/causa/mcp.json"
     fi
 
+    if [[ ! -f "${mcp_json}" ]]; then
+        log_error "MCP config file not found: ${mcp_json}"
+        return 1
+    fi
+
+    local tmp_mcp_cm
+    if ! tmp_mcp_cm=$(mktemp /tmp/causa-$$-mcp-configmap-XXXXXX.yaml); then
+        log_error "Failed to create temporary file for Causa MCP ConfigMap"
+        return 1
+    fi
     if ! ${KUBE_CLI} create configmap causa-mcp-config \
             --from-file=mcp.json="${mcp_json}" \
             --namespace="${INSTALL_NAMESPACE}" \
-            --dry-run=client -o yaml \
+            --dry-run=client -o yaml >>"${LOG_FILE}" 2>&1 \
             | sed 's/^\(  name: causa-mcp-config\)$/\1\n  labels:\n    app: causa-backend\n    app.kubernetes.io\/component: rca-engine/' \
-            | ${KUBE_CLI} apply -f - >>"${LOG_FILE}" 2>&1; then
+            > "${tmp_mcp_cm}"; then
+        rm -f "${tmp_mcp_cm}"
+        log_error "Failed to generate Causa MCP ConfigMap YAML"
+        return 1
+    fi
+    if ! ${KUBE_CLI} apply -f "${tmp_mcp_cm}" >>"${LOG_FILE}" 2>&1; then
+        rm -f "${tmp_mcp_cm}"
         log_error "Failed to apply Causa MCP ConfigMap"
         return 1
     fi
+    rm -f "${tmp_mcp_cm}"
     write_to_log_file "SUCCESS" "Manifest applied: ${mcp_json}"
 
     if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
