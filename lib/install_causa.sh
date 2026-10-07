@@ -110,12 +110,12 @@ install_causa() {
 
     # Apply the MCP config ConfigMap — mounts mcp.json at /etc/causa inside the pod.
     # Applies to both kind and OpenShift; must exist before the deployment starts.
-    # Built from target-specific mcp.json via --from-file; labels are injected via
-    # sed into the dry-run YAML output before apply so they are preserved on the
-    # ConfigMap without needing a separate mcp-config.yaml manifest.
+    # Built from target-specific mcp.json via --from-file; labels are added directly
+    # via --labels so the dry-run YAML stdout is preserved for kubectl apply.
+    # Only stderr is redirected to the log so stdout (the YAML) reaches the pipe.
     local mcp_json
     if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
-        mcp_json="${SCRIPT_DIR}/manifests/openshift/causa/mcp.json"
+        mcp_json="${SCRIPT_DIR}/manifests/causa/mcp_openshift.json"
     else
         mcp_json="${SCRIPT_DIR}/manifests/causa/mcp.json"
     fi
@@ -133,8 +133,9 @@ install_causa() {
     if ! ${KUBE_CLI} create configmap causa-mcp-config \
             --from-file=mcp.json="${mcp_json}" \
             --namespace="${INSTALL_NAMESPACE}" \
-            --dry-run=client -o yaml >>"${LOG_FILE}" 2>&1 \
-            | sed 's/^\(  name: causa-mcp-config\)$/\1\n  labels:\n    app: causa-backend\n    app.kubernetes.io\/component: rca-engine/' \
+            --labels="app=causa-backend,app.kubernetes.io/component=rca-engine" \
+            --dry-run=client -o yaml \
+            2>>"${LOG_FILE}" \
             > "${tmp_mcp_cm}"; then
         rm -f "${tmp_mcp_cm}"
         log_error "Failed to generate Causa MCP ConfigMap YAML"
