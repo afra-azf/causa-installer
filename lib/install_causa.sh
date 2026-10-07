@@ -255,7 +255,10 @@ uninstall_causa() {
     fi
 
     # Delete MCP config ConfigMap — applies to both kind and OpenShift
-    ${KUBE_CLI} delete configmap causa-mcp-config -n "${INSTALL_NAMESPACE}" --ignore-not-found >>"${LOG_FILE}" 2>&1
+    if ! ${KUBE_CLI} delete configmap causa-mcp-config -n "${INSTALL_NAMESPACE}" --ignore-not-found >>"${LOG_FILE}" 2>&1; then
+        log_error "Failed to delete Causa MCP ConfigMap"
+        return 1
+    fi
 
     if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
         local ocp_dir="${SCRIPT_DIR}/manifests/openshift/causa"
