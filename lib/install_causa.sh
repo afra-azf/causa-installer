@@ -115,7 +115,7 @@ install_causa() {
     # Only stderr is redirected to the log so the YAML stdout reaches the temp file.
     local mcp_json
     if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
-        mcp_json="${SCRIPT_DIR}/manifests/causa/mcp_openshift.json"
+        mcp_json="${SCRIPT_DIR}/manifests/openshift/causa/mcp.json"
     else
         mcp_json="${SCRIPT_DIR}/manifests/causa/mcp.json"
     fi
