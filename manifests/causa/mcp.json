@@ -81,11 +81,11 @@
     },
     "async-profiler": {
       "type": "streamable-http",
-      "url": "http://async-profiler-mcp-server:8080/mcp",
+      "url": "http://jafra-mcp:8083/mcp",
       "headers": {},
       "optional": false,
       "alwaysAllow": ["list_profiled_pods", "get_pod_jvm_status", "get_jvm_statistics", "get_recording", "get_recording_report", "get_jfr_summary", "get_flame_graph"],
-      "healthCheck": { "url": "http://async-profiler-mcp-server:8080/healthz", "timeoutMs": 15000 },
+      "healthCheck": { "url": "http://jafra-mcp:8083/q/health/ready", "timeoutMs": 15000 },
       "timeoutMs": 15000,
       "description": "Async Profiler MCP — JVM profiling via async-profiler agent",
       "tools": [
