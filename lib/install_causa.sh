@@ -261,21 +261,31 @@ uninstall_causa() {
         return 0
     fi
 
-    # Delete MCP config ConfigMap — applies to both kind and OpenShift
-    if ! ${KUBE_CLI} delete configmap causa-mcp-config -n "${INSTALL_NAMESPACE}" --ignore-not-found >>"${LOG_FILE}" 2>&1; then
-        log_error "Failed to delete Causa MCP ConfigMap"
-        return 1
-    fi
-
+    # Delete the backend Deployment first so no pods are left referencing the
+    # ConfigMap volume mount.  Deployment deletion errors are propagated so a
+    # broken Deployment is never silently left behind.
     if [[ "${INSTALL_TARGET:-kind}" == "openshift" ]]; then
         local ocp_dir="${SCRIPT_DIR}/manifests/openshift/causa"
         delete_manifest "${ocp_dir}/route.yaml"          "${INSTALL_NAMESPACE}"
-        delete_manifest "${ocp_dir}/deployment.yaml"     "${INSTALL_NAMESPACE}"
+        if ! delete_manifest "${ocp_dir}/deployment.yaml" "${INSTALL_NAMESPACE}"; then
+            log_error "Failed to delete Causa Backend deployment"
+            return 1
+        fi
         delete_manifest "${ocp_dir}/service.yaml"        "${INSTALL_NAMESPACE}"
         delete_manifest "${ocp_dir}/configmap.yaml"      "${INSTALL_NAMESPACE}"
         delete_manifest "${ocp_dir}/serviceaccount.yaml" "${INSTALL_NAMESPACE}"
     else
-        delete_manifest "${SCRIPT_DIR}/manifests/causa/deployment.yaml" "${INSTALL_NAMESPACE}"
+        if ! delete_manifest "${SCRIPT_DIR}/manifests/causa/deployment.yaml" "${INSTALL_NAMESPACE}"; then
+            log_error "Failed to delete Causa Backend deployment"
+            return 1
+        fi
+    fi
+
+    # Delete MCP config ConfigMap only after the Deployment is gone so no pod
+    # is left with a missing required volume mount.
+    if ! ${KUBE_CLI} delete configmap causa-mcp-config -n "${INSTALL_NAMESPACE}" --ignore-not-found >>"${LOG_FILE}" 2>&1; then
+        log_error "Failed to delete Causa MCP ConfigMap"
+        return 1
     fi
 
     write_to_log_file "SUCCESS" "Causa Backend uninstalled"
