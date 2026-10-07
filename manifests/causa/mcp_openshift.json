@@ -36,30 +36,6 @@
         }
       ]
     },
-    "kruize": {
-      "type": "streamable-http",
-      "url": "http://kruize-mcp-server-service:8080/mcp",
-      "headers": {},
-      "optional": false,
-      "alwaysAllow": ["getCostOptimizedRecommendations", "getPerformanceOptimizedRecommendations"],
-      "healthCheck": { "url": "http://kruize-mcp-server-service:8080/q/health/ready", "timeoutMs": 10000 },
-      "timeoutMs": 10000,
-      "description": "Kruize MCP — CPU and memory resource optimisation recommendations",
-      "tools": [
-        {
-          "name": "getCostOptimizedRecommendations",
-          "contextKey": "KRUIZE_COST_RECOMMENDATIONS",
-          "description": "Container resource-request/limit suggestions optimised for cost.",
-          "arguments": { "containerName": "${containerName}", "namespace": "${namespace}" }
-        },
-        {
-          "name": "getPerformanceOptimizedRecommendations",
-          "contextKey": "KRUIZE_PERFORMANCE_RECOMMENDATIONS",
-          "description": "Container resource-request/limit suggestions optimised for performance.",
-          "arguments": { "containerName": "${containerName}", "namespace": "${namespace}" }
-        }
-      ]
-    },
     "quarkus": {
       "type": "streamable-http",
       "url": "http://mcp-metrics:8080/mcp",
